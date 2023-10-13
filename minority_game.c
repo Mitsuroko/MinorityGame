@@ -11,11 +11,13 @@ sfmt_t sfmt;
 int mg(int m, int n, int s, int t){
   int agent[201]={};
   int point[n][s][2];
-  int win[n];
+  int win;
   int his = 3;
   int rand = 0;
   int action = 0;
+  int table_num[n];
   int temp_point[s];
+  int much[2] = {0, 0};
 
 //初期化
   for (int i=0; i<n; i++){
@@ -32,8 +34,10 @@ int mg(int m, int n, int s, int t){
       point[i][l][0] = rand % 256;
     }
   }
-
   for (int k=0; k<t; k++){
+    much[0] = 0;
+    much[1] = 0;
+    win = 0;
     if (k==0){
       //1ステップ目の履歴をランダムで作成
       rand = get_rand();
@@ -45,7 +49,7 @@ int mg(int m, int n, int s, int t){
       for (int l=0; l<s; l++){
         temp_point[l] = point[i][l][1];
       }
-      select_table(temp_point, s);
+      table_num[i] = select_table(temp_point, s);
       for (int l=0; l<s; l++){
         if (l<s-1){
           if (l == 0){
@@ -55,9 +59,28 @@ int mg(int m, int n, int s, int t){
         }
         else{printf("%d)\n", point[i][l][0]);}
       }
-      show_int(point[i][0][0]);
-      action = make_decision(his, point[i][0][0]);
+      show_int(point[i][table_num[i]][0]);
+      action = make_decision(his, point[i][table_num[i]][0]);
       printf("action=%d\n", action);
+      if (action == 0){
+        much[0]+=1;
+      }
+      else{much[1]+=1;}
+    }
+    if (much[0] < much[1]){
+        win = 0;
+    }
+    else{win = 1;}
+    printf("win=%d\n", win);
+    for (int i=0; i<n; i++){
+      if (win == make_decision(his, point[i][table_num[i]][0])){
+        point[i][table_num[i]][1] += 1;
+      }
+      else{point[i][table_num[i]][1] -= 1;}
+      for (int l=0; l<s; l++){
+        printf("%d", point[i][l][1]);
+      }
+      printf("\n");
     }
   }
   return (0);
@@ -79,10 +102,23 @@ int make_decision(int his, int table){
 }
 
 int select_table(int *point, int s){
+  int temp = 0;
+  int num = 0;
   for (int i=0; i<s; i++){
     printf("%d", point[i]);
+    if (i == 0){
+      temp = point[i];
+      num = i;
+    }
+    else{
+      if (temp < point[i]){
+        temp = point[i];
+        num = i;
+      }
+    }
   }
   printf("\n");
+  return (num);
 }
 
 void show_int(int x){
