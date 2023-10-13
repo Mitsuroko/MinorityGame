@@ -15,9 +15,11 @@ int mg(int m, int n, int s, int t){
   int his = 3;
   int rand = 0;
   int action = 0;
+  int temp_point[s];
 
+//初期化
   for (int i=0; i<n; i++){
-    for (int l=0; l<m+1; l++){
+    for (int l=0; l<s; l++){
       point[i][l][0] = 0;
       point[i][l][1] = 0;
     }
@@ -37,24 +39,25 @@ int mg(int m, int n, int s, int t){
       rand = get_rand();
       his = rand % 8;
       printf("%d\n", his);
-      for (int i=0; i<n; i++){
-        for (int l=0; l<s; l++){
-          if (l<s-1){
-            if (l == 0){
-              printf("(");
-            }
-            printf("%d,", point[i][l][0]);
-          }
-          else{printf("%d)\n", point[i][l][0]);}
-        }
-        show_int(point[i][0][0]);
-        action = make_decision(his, (char)point[i][0][0]);
-        printf("%d\n", action);
-      }
     }
-    else{
-      for (int i=0; i<n; i++){
+    for (int i=0; i<n; i++){
+      //もっとも高いポイントのテーブルを選ぶ
+      for (int l=0; l<s; l++){
+        temp_point[l] = point[i][l][1];
       }
+      select_table(temp_point, s);
+      for (int l=0; l<s; l++){
+        if (l<s-1){
+          if (l == 0){
+            printf("(");
+          }
+          printf("%d,", point[i][l][0]);
+        }
+        else{printf("%d)\n", point[i][l][0]);}
+      }
+      show_int(point[i][0][0]);
+      action = make_decision(his, point[i][0][0]);
+      printf("action=%d\n", action);
     }
   }
   return (0);
@@ -75,6 +78,13 @@ int make_decision(int his, int table){
   return (decision);
 }
 
+int select_table(int *point, int s){
+  for (int i=0; i<s; i++){
+    printf("%d", point[i]);
+  }
+  printf("\n");
+}
+
 void show_int(int x){
   int i;
   printf("%4u  %02x  ", x, x);
@@ -92,6 +102,6 @@ int main(int argc, char *argv[]){
   else{
     seed = strtoul(argv[1], NULL, 10);
 	  sfmt_init_gen_rand(&sfmt, seed);
-    mg(3, 11, 5, 100);
+    mg(3, 11, 5, 1);
   }
 }
