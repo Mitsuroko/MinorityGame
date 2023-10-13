@@ -14,6 +14,7 @@ int mg(int m, int n, int s, int t){
   int win[n];
   int his = 3;
   int rand = 0;
+  int action = 0;
 
   for (int i=0; i<n; i++){
     for (int l=0; l<m+1; l++){
@@ -32,8 +33,10 @@ int mg(int m, int n, int s, int t){
 
   for (int k=0; k<t; k++){
     if (k==0){
+      //1ステップ目の履歴をランダムで作成
       rand = get_rand();
       his = rand % 8;
+      printf("%d\n", his);
       for (int i=0; i<n; i++){
         for (int l=0; l<s; l++){
           if (l<s-1){
@@ -44,6 +47,9 @@ int mg(int m, int n, int s, int t){
           }
           else{printf("%d)\n", point[i][l][0]);}
         }
+        show_int(point[i][0][0]);
+        action = make_decision(his, (char)point[i][0][0]);
+        printf("%d\n", action);
       }
     }
     else{
@@ -61,6 +67,21 @@ int get_rand(){
   rand = rand*10000;
   rand2 = (int)rand;
   return (rand2);
+}
+
+int make_decision(int his, int table){
+  int decision = 0;
+  decision = (table>>his)&1;
+  return (decision);
+}
+
+void show_int(int x){
+  int i;
+  printf("%4u  %02x  ", x, x);
+  for (i = 15; i >= 0; i--){
+    printf("%d", (x>>i) & 1);
+  }
+  printf("\n");
 }
 
 int main(int argc, char *argv[]){
