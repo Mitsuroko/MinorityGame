@@ -49,19 +49,10 @@ int mg(int m, int n, int s, int t){
       for (int l=0; l<s; l++){
         temp_point[l] = point[i][l][1];
       }
+      printf("agent%d [", i);
       table_num[i] = select_table(temp_point, s);
-      for (int l=0; l<s; l++){
-        if (l<s-1){
-          if (l == 0){
-            printf("(");
-          }
-          printf("%d,", point[i][l][0]);
-        }
-        else{printf("%d)\n", point[i][l][0]);}
-      }
-      show_int(point[i][table_num[i]][0]);
       action = make_decision(his, point[i][table_num[i]][0]);
-      printf("action=%d\n", action);
+      printf("selected_table=%d, action=%d]\n", table_num[i], action);
       if (action == 0){
         much[0]+=1;
       }
@@ -71,16 +62,12 @@ int mg(int m, int n, int s, int t){
         win = 0;
     }
     else{win = 1;}
-    printf("win=%d\n", win);
+    printf("result [team0=%d team1=%d win=%d]\n\n", much[0], much[1], win);
     for (int i=0; i<n; i++){
       if (win == make_decision(his, point[i][table_num[i]][0])){
         point[i][table_num[i]][1] += 1;
       }
       else{point[i][table_num[i]][1] -= 1;}
-      for (int l=0; l<s; l++){
-        printf("%d", point[i][l][1]);
-      }
-      printf("\n");
     }
   }
   return (0);
@@ -103,22 +90,41 @@ int make_decision(int his, int table){
 
 int select_table(int *point, int s){
   int temp = 0;
+  int rand = 0;
   int num = 0;
+  int stack = 0;
+  int table[32] = {};
+  int table_num[32] = {};
   for (int i=0; i<s; i++){
     printf("%d", point[i]);
     if (i == 0){
       temp = point[i];
-      num = i;
+      stack += 1;
+      table[stack-1] = temp;
+      table_num[stack-1] = i;
     }
     else{
       if (temp < point[i]){
         temp = point[i];
-        num = i;
+        stack = 1;
+        for (int l=0; l<32; l++){
+          table[l] = 0;
+          table_num[l] = 0;
+        }
+        table[stack-1] = temp;
+        table_num[stack-1] = i;
+      }
+      else if (temp == point[i]){
+        stack += 1;
+        table[stack-1] = temp;
+        table_num[stack-1] = i;
       }
     }
   }
-  printf("\n");
-  return (num);
+  rand = get_rand();
+  num = rand % stack;
+  printf(", ");
+  return (table_num[num]);
 }
 
 void show_int(int x){
@@ -138,6 +144,6 @@ int main(int argc, char *argv[]){
   else{
     seed = strtoul(argv[1], NULL, 10);
 	  sfmt_init_gen_rand(&sfmt, seed);
-    mg(3, 11, 5, 1);
+    mg(3, 11, 5, 2);
   }
 }
