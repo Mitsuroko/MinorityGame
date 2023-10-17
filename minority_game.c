@@ -12,6 +12,8 @@ int mg(int m, int n, int s, int t){
   int agent[201]={};
   int point[n][s][2];
   int win;
+  int ac = 1;
+  int ac2 = 1;
   int his = 3;
   int rand = 0;
   int action = 0;
@@ -28,10 +30,13 @@ int mg(int m, int n, int s, int t){
   }
 
   //s個の戦略テーブルを選択
+  for (int a=0; a<m; a++){ac = ac*2;}
+  for (int a=0; a<ac; a++){ac2 = ac2*2;}
+  printf("ac=%d, ac2=%d\n", ac, ac2);
   for (int i=0; i<n; i++){
     for (int l=0; l<s; l++){
       rand = get_rand();
-      point[i][l][0] = rand % 256;
+      point[i][l][0] = rand % ac2;
     }
   }
   for (int k=0; k<t; k++){
@@ -41,8 +46,8 @@ int mg(int m, int n, int s, int t){
     if (k==0){
       //1ステップ目の履歴をランダムで作成
       rand = get_rand();
-      his = rand % 8;
-      printf("%d\n", his);
+      his = rand % ac;
+      printf("his=%d\n", his);
     }
     for (int i=0; i<n; i++){
       //もっとも高いポイントのテーブルを選ぶ
@@ -77,7 +82,7 @@ int get_rand(){
   double rand;
   int rand2;
   rand = sfmt_genrand_real2(&sfmt);
-  rand = rand*10000;
+  rand = rand*100000;
   rand2 = (int)rand;
   return (rand2);
 }
@@ -93,8 +98,8 @@ int select_table(int *point, int s){
   int rand = 0;
   int num = 0;
   int stack = 0;
-  int table[32] = {};
-  int table_num[32] = {};
+  int table[64] = {};
+  int table_num[64] = {};
   for (int i=0; i<s; i++){
     printf("%d", point[i]);
     if (i == 0){
@@ -107,7 +112,7 @@ int select_table(int *point, int s){
       if (temp < point[i]){
         temp = point[i];
         stack = 1;
-        for (int l=0; l<32; l++){
+        for (int l=0; l<64; l++){
           table[l] = 0;
           table_num[l] = 0;
         }
@@ -144,6 +149,6 @@ int main(int argc, char *argv[]){
   else{
     seed = strtoul(argv[1], NULL, 10);
 	  sfmt_init_gen_rand(&sfmt, seed);
-    mg(3, 11, 5, 2);
+    mg(4, 11, 3, 2);
   }
 }
