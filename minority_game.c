@@ -9,34 +9,42 @@
 sfmt_t sfmt;
 
 int mg(int m, int n, int s, int t){
-  int agent[201]={};
-  int point[n][s][2];
+  int agent[n];
   int win;
-  int ac = 1;
-  int ac2 = 1;
+  unsigned int ac = 1;
   int his = 3;
-  int rand = 0;
-  int action = 0;
+  unsigned int rand = 0;
+  int action[n];
   int table_num[n];
-  int temp_point[s];
   int much[2] = {0, 0};
+  int temp_point[s];
 
-//初期化
+  for (int a=0; a<m; a++){ac = ac*2;}
+  short int point[n][s][ac+1];
+  int temp_table[ac];
+
+  //初期化
   for (int i=0; i<n; i++){
     for (int l=0; l<s; l++){
-      point[i][l][0] = 0;
-      point[i][l][1] = 0;
+      for (int j=0; j<ac+1; j++){
+        point[i][l][j] = 0;
+      }
     }
   }
 
   //s個の戦略テーブルを選択
-  for (int a=0; a<m; a++){ac = ac*2;}
-  for (int a=0; a<ac; a++){ac2 = ac2*2;}
-  printf("ac=%d, ac2=%d\n", ac, ac2);
+  printf("ac=%d\n", ac);
   for (int i=0; i<n; i++){
     for (int l=0; l<s; l++){
-      rand = get_rand();
-      point[i][l][0] = rand % ac2;
+      for (int j=0; j<ac; j++){
+        rand = get_rand();
+        rand = rand % 2;
+        if (rand == 1){
+          point[i][l][j] = 1;
+        }
+        else{point[i][l][j] = 0;}
+      }
+      point[i][l][ac] = 0;
     }
   }
   for (int k=0; k<t; k++){
@@ -47,18 +55,21 @@ int mg(int m, int n, int s, int t){
       //1ステップ目の履歴をランダムで作成
       rand = get_rand();
       his = rand % ac;
-      printf("his=%d\n", his);
     }
+    printf("his=%d\n", his);
     for (int i=0; i<n; i++){
       //もっとも高いポイントのテーブルを選ぶ
       for (int l=0; l<s; l++){
-        temp_point[l] = point[i][l][1];
+        temp_point[l] = point[i][l][ac];
       }
-      printf("agent%d [", i);
+      printf("agent%d [table_point=", i);
       table_num[i] = select_table(temp_point, s);
-      action = make_decision(his, point[i][table_num[i]][0]);
-      printf("selected_table=%d, action=%d]\n", table_num[i], action);
-      if (action == 0){
+      for (int l=0; l<ac; l++){
+        temp_table[l] = point[i][table_num[i]][l];
+      }
+      action[i] = point[i][table_num[i]][his];
+      printf("selected_table=%d, action=%d]\n", table_num[i], action[i]);
+      if (action[i] == 0){
         much[0]+=1;
       }
       else{much[1]+=1;}
@@ -69,27 +80,39 @@ int mg(int m, int n, int s, int t){
     else{win = 1;}
     printf("result [team0=%d team1=%d win=%d]\n\n", much[0], much[1], win);
     for (int i=0; i<n; i++){
-      if (win == make_decision(his, point[i][table_num[i]][0])){
-        point[i][table_num[i]][1] += 1;
+      if (win == action[i]){
+        point[i][table_num[i]][ac] += 1;
       }
-      else{point[i][table_num[i]][1] -= 1;}
+      else{point[i][table_num[i]][ac] -= 1;}
     }
+    his = renew_hist(his, win, ac);
   }
   return (0);
 }
 
 int get_rand(){
   double rand;
-  int rand2;
+  unsigned int rand2;
   rand = sfmt_genrand_real2(&sfmt);
-  rand = rand*100000;
+  rand = rand*130000;
   rand2 = (int)rand;
   return (rand2);
 }
 
-int make_decision(int his, int table){
+int renew_hist(int his, int win, int ac){
+  his <<= 1;
+  if (his >= ac){
+    his -= ac;
+  }
+  his += win;
+  return (his);
+}
+
+int make_decision(int his, int *table, int ac){
   int decision = 0;
-  decision = (table>>his)&1;
+  for (int i=0; i++; i<his){
+    decision = table[i];
+  }
   return (decision);
 }
 
@@ -98,14 +121,12 @@ int select_table(int *point, int s){
   int rand = 0;
   int num = 0;
   int stack = 0;
-  int table[64] = {};
-  int table_num[64] = {};
+  int table_num[64];
   for (int i=0; i<s; i++){
     printf("%d", point[i]);
     if (i == 0){
       temp = point[i];
       stack += 1;
-      table[stack-1] = temp;
       table_num[stack-1] = i;
     }
     else{
@@ -113,15 +134,12 @@ int select_table(int *point, int s){
         temp = point[i];
         stack = 1;
         for (int l=0; l<64; l++){
-          table[l] = 0;
           table_num[l] = 0;
         }
-        table[stack-1] = temp;
         table_num[stack-1] = i;
       }
       else if (temp == point[i]){
         stack += 1;
-        table[stack-1] = temp;
         table_num[stack-1] = i;
       }
     }
@@ -149,6 +167,6 @@ int main(int argc, char *argv[]){
   else{
     seed = strtoul(argv[1], NULL, 10);
 	  sfmt_init_gen_rand(&sfmt, seed);
-    mg(4, 11, 3, 2);
+    mg(11, 201, 2, 5);
   }
 }
